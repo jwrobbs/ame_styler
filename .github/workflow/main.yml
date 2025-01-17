@@ -1,0 +1,51 @@
+name: Build and Release Plugin
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Step 2: Create ZIP with the correct folder structure, excluding hidden folders
+    - name: Create ZIP
+      run: |
+        mkdir release
+        rsync -av --exclude='release' --exclude='.git' --exclude='.github' --exclude='*.DS_Store' ./ release/ame_styler
+        cd release
+        zip -r ame_styler.zip ame_styler
+
+    # Step 3: Get Release Upload URL
+    - name: Get release info
+      id: get_release
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const release = await github.rest.repos.getReleaseByTag({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag: context.ref.replace('refs/tags/', ''),
+          });
+          const fs = require('fs');
+          const uploadUrl = release.data.upload_url;
+          fs.appendFileSync(process.env.GITHUB_ENV, `UPLOAD_URL=${uploadUrl}\n`);
+
+    # Step 4: Upload the ZIP as a release asset
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ env.UPLOAD_URL }}
+        asset_path: release/ame_styler.zip
+        asset_name: ame_styler.zip
+        asset_content_type: application/zip
