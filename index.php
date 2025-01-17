@@ -9,7 +9,7 @@
  * Plugin Name:       JWR AME Styler
  * Plugin URI:        https://joshrobbs.com
  * Description:       Style options for Advance Menu Styler
- * Version:           0.2.0
+ * Version:           0.2.1
  * Author:            Josh Robbs <josh@joshrobbs.com>
  * Author URI:        https://joshrobbs.com
  * Text Domain:       jwr
